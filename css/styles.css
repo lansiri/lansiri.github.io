@@ -1,0 +1,61 @@
+/* Yleiset asetukset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Roboto', Arial, sans-serif;
+}
+
+body {
+    background-color: #2F3131;
+    color: #F8F1E5;
+}
+
+header {
+    background-color: #2F3131;
+    padding: 20px;
+}
+
+nav ul {
+    display: flex;
+    justify-content: space-around;
+    list-style: none;
+}
+
+nav ul li a {
+    color: #F9BA32;
+    text-decoration: none;
+}
+
+nav ul li a:hover {
+    color: #FFD700;
+}
+
+main {
+    padding: 20px;
+}
+
+h1 {
+    color: #426E86;
+    font-size: 32px;
+}
+
+p {
+    font-size: 18px;
+    color: #F8F1E5;
+}
+
+a {
+    color: #F9BA32;
+}
+
+a:hover {
+    color: #FFD700;
+}
+
+footer {
+    background-color: #2F3131;
+    padding: 10px;
+    text-align: center;
+    color: #F8F1E5;
+}
