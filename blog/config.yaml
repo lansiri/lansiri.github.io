@@ -1,0 +1,5 @@
+title: "the blog"
+description: "automated toughts"
+baseurl: "/blog"
+url: "https://lansiri.github.io"
+theme: minima
