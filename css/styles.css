@@ -1,13 +1,14 @@
-/* Make the particles background cover the entire page */
+/* Particles.js background */
 #particles-js {
-    position: absolute;
+    position: fixed;
+    top: 0;
+    left: 0;
     width: 100%;
     height: 100%;
-    background-color: #2F3131;
-    z-index: -1; /* Place it behind the content */
+    z-index: -1; /* Ensures the particles are behind the content */
 }
 
-/* Align the menu to the center of the screen */
+/* Make the header and nav stay centered */
 header {
     display: flex;
     justify-content: center; /* Center the navigation horizontally */
@@ -34,6 +35,7 @@ header {
 
 .intro {
     text-align: center;
+    margin-top: 30px;
 }
 
 h1 {
