@@ -1,15 +1,28 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <!-- Sivun merkistö ja meta-tiedot. Näyttöruudun koko skaalataan mobiiliystävälliseksi -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Welcome to My Portfolio</title>
+    <!-- Linkki ulkoiseen CSS-tyylitiedostoon -->
     <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
     <header>
         <nav>
-            <ul>
+            <!-- Sivuston logo, näkyy navigaatiopalkin vasemmassa reunassa -->
+            <div class="logo">
+                <h1>Your Name</h1>
+            </div>
+            <!-- Hamburger-valikko mobiililaitteille -->
+            <button class="hamburger" id="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            <!-- Navigaatio, johon on linkit eri sivuille -->
+            <ul class="nav-links" id="nav-links">
                 <li><a href="index.html">Front Page</a></li>
                 <li><a href="profile.html">Profile</a></li>
                 <li><a href="projects.html">Projects</a></li>
@@ -20,15 +33,21 @@
     </header>
 
     <main>
-        <section>
+        <!-- Sivun pääsisältö, tervetuloviesti ja CTA (call-to-action) -painike -->
+        <section class="intro">
             <h1>Welcome to My Portfolio</h1>
-            <p>Hello! I'm Lansiri. Explore my profile, see my projects, and read my blog.</p>
-            <a href="profile.html">View My Profile</a>
+            <p>Hello! I'm [Name], a [Profession]. Explore my profile, see my projects, and read my blog.</p>
+            <!-- Painike, joka ohjaa profiilisivulle -->
+            <a href="profile.html" class="cta">View My Profile</a>
         </section>
     </main>
 
     <footer>
-        <p>&copy; 2024 Lansiri</p>
+        <!-- Alatunniste, jossa on tekijänoikeustiedot -->
+        <p>&copy; 2024 Your Name</p>
     </footer>
+
+    <!-- Linkki JavaScript-tiedostoon, joka hallitsee hamburger-valikon toiminnallisuutta -->
+    <script src="js/main.js"></script>
 </body>
 </html>

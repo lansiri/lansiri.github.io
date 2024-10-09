@@ -1,4 +1,4 @@
-/* Yleiset asetukset */
+/* Nollaa marginaalit ja paddingit sekä asettaa laatikon koon hallinnan kaikille elementeille */
 * {
     margin: 0;
     padding: 0;
@@ -6,56 +6,128 @@
     font-family: 'Roboto', Arial, sans-serif;
 }
 
+/* Sivun taustaväri ja tekstin perusväri */
 body {
-    background-color: #2F3131;
-    color: #F8F1E5;
+    background-color: #2F3131; /* Tummanharmaa tausta */
+    color: #F8F1E5; /* Vaalea tekstiväri */
+    line-height: 1.6; /* Parantaa tekstin luettavuutta */
+    padding: 0 20px; /* Pieni sisäinen marginaali sivun reunoille */
 }
 
+/* Ylätunniste (header) asetukset */
 header {
-    background-color: #2F3131;
-    padding: 20px;
+    background-color: #2F3131; /* Sama taustaväri kuin kehyksessä */
+    padding: 20px 0; /* Ylätunnisteen sisämarginaalit */
+    display: flex; /* Flexbox asettelu, jolla navigaatio ja logo asetellaan */
+    justify-content: space-between; /* Tasaa elementit vastakkaisille reunoille */
+    align-items: center; /* Kohdistaa elementit pystysuunnassa keskelle */
+    position: relative; /* Sijoitetaan suhteessa muuhun sisältöön */
 }
 
-nav ul {
-    display: flex;
+/* Logon tyylit */
+.logo h1 {
+    font-size: 24px;
+    color: #F9BA32; /* Keltainen väri logolle */
+}
+
+/* Hamburger-valikon tyylit, vain mobiilikäytössä */
+.hamburger {
+    display: none; /* Oletuksena piilotettu (näytetään mobiilissa) */
+    flex-direction: column;
     justify-content: space-around;
-    list-style: none;
+    width: 30px;
+    height: 30px;
+    background: none;
+    border: none;
+    cursor: pointer;
 }
 
-nav ul li a {
-    color: #F9BA32;
+.hamburger span {
+    display: block;
+    width: 100%;
+    height: 4px;
+    background-color: #F8F1E5; /* Vaalea väri hamburgerin viivoille */
+    transition: 0.3s; /* Siirtymäefekti klikatessa */
+}
+
+/* Navigaatiolinkkien perusasetukset */
+.nav-links {
+    display: flex;
+    list-style: none; /* Poistaa pisteet luettelon linkeistä */
+}
+
+.nav-links li {
+    margin: 0 15px; /* Tilaa linkkien väliin */
+}
+
+/* Navigaatiolinkkien tyyli (tekstin väri ja hover-efekti) */
+.nav-links a {
+    color: #F9BA32; /* Keltainen väri linkeille */
     text-decoration: none;
-}
-
-nav ul li a:hover {
-    color: #FFD700;
-}
-
-main {
-    padding: 20px;
-}
-
-h1 {
-    color: #426E86;
-    font-size: 32px;
-}
-
-p {
     font-size: 18px;
-    color: #F8F1E5;
 }
 
-a {
-    color: #F9BA32;
+/* Hover-efekti navigaatiolinkeille */
+.nav-links a:hover {
+    color: #FFD700; /* Tummempi keltainen hover-tilassa */
 }
 
-a:hover {
-    color: #FFD700;
+/* Pääsisältöalueen tyylit */
+main {
+    padding: 40px 0;
+    text-align: center; /* Keskittää tekstin ja elementit */
 }
 
+/* Etusivun otsikon (h1) tyyli */
+.intro h1 {
+    color: #426E86; /* Sininen väri otsikolle */
+    font-size: 36px; /* Suurempi fonttikoko otsikolle */
+    margin-bottom: 20px; /* Tilaa otsikon alapuolelle */
+}
+
+/* Etusivun tekstin tyyli */
+.intro p {
+    font-size: 18px;
+    margin-bottom: 30px; /* Tilaa tekstin alapuolelle */
+}
+
+/* CTA (Call-to-action) painikkeen tyyli */
+.cta {
+    background-color: #426E86; /* Sininen taustaväri */
+    color: #F8F1E5; /* Vaalea teksti */
+    padding: 10px 20px;
+    text-decoration: none;
+    font-size: 18px;
+    border-radius: 5px; /* Pyöristetyt kulmat painikkeelle */
+}
+
+/* Hover-efekti painikkeelle */
+.cta:hover {
+    background-color: #354F63; /* Tummempi sininen hover-tilassa */
+}
+
+/* Alatunnisteen tyyli */
 footer {
     background-color: #2F3131;
-    padding: 10px;
+    padding: 20px 0;
     text-align: center;
     color: #F8F1E5;
 }
+
+/* Responsiiviset tyylit, kun näytön leveys on alle 768px (esim. tabletit ja puhelimet) */
+@media (max-width: 768px) {
+    .hamburger {
+        display: flex; /* Näyttää hamburger-valikon mobiililaitteissa */
+    }
+
+    .nav-links {
+        position: absolute;
+        top: 60px; /* Navigaatio siirtyy yläreunasta alaspäin */
+        right: 0;
+        background-color: #2F3131; /* Tummanharmaa tausta */
+        flex-direction: column; /* Navigaatiolinkit pystysuuntaan */
+        align-items: center;
+        width: 100%;
+        height: 0;
+        overflow: hidden; /* Piilottaa navigaation aluksi */
+        transition: height 0.3s ease; /* Siirtymä navigaation es
