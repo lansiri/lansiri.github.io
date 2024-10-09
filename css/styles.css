@@ -1,68 +1,100 @@
-/* Particles.js background */
+/* Particles background */
 #particles-js {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    z-index: -1; /* Ensures the particles are behind the content */
+    z-index: -1;
 }
 
-/* Make the header and nav stay centered */
+/* Center the navigation and stack menu items vertically */
 header {
     display: flex;
-    justify-content: center; /* Center the navigation horizontally */
-    align-items: center;     /* Center the navigation vertically */
-    height: 100vh;           /* Full height of the viewport */
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
 }
 
+/* Logo styling */
+.logo h1 {
+    font-size: 24px;
+    color: #F9BA32;
+}
+
+/* Hamburger menu styling */
+.hamburger {
+    display: none; /* Hidden by default */
+    flex-direction: column;
+    justify-content: space-around;
+    width: 30px;
+    height: 30px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    margin-bottom: 20px;
+}
+
+.hamburger span {
+    display: block;
+    width: 100%;
+    height: 3px;
+    background-color: #F9BA32;
+    transition: all 0.3s ease;
+}
+
+/* Stacked vertical navigation for large screens */
 .nav-links {
     display: flex;
+    flex-direction: column; /* Stack items vertically */
+    align-items: center;
     list-style: none;
-    gap: 20px;               /* Add some space between links */
+}
+
+.nav-links li {
+    margin: 10px 0; /* Add space between the items */
 }
 
 .nav-links li a {
-    color: #F9BA32;
+    display: inline-block;
+    padding: 15px 30px;
+    background-color: #426E86;
+    color: #F8F1E5;
     text-decoration: none;
+    border-radius: 5px;
     font-size: 24px;
-    transition: color 0.3s ease;
+    transition: background-color 0.3s ease;
 }
 
 .nav-links li a:hover {
-    color: #FFD700;
-}
-
-.intro {
-    text-align: center;
-    margin-top: 30px;
-}
-
-h1 {
-    color: #426E86;
-    font-size: 36px;
-}
-
-p {
-    color: #F8F1E5;
-    font-size: 18px;
-}
-
-.cta {
-    background-color: #426E86;
-    color: #F8F1E5;
-    padding: 10px 20px;
-    text-decoration: none;
-    border-radius: 5px;
-    font-size: 18px;
-}
-
-.cta:hover {
     background-color: #354F63;
 }
 
-footer {
-    text-align: center;
-    padding: 20px;
-    color: #F8F1E5;
-}
+/* Responsive styles for mobile */
+@media (max-width: 768px) {
+    header {
+        height: auto; /* Adjust height for smaller screens */
+    }
+
+    /* Show hamburger menu */
+    .hamburger {
+        display: flex;
+    }
+
+    /* Hide the navigation links by default on small screens */
+    .nav-links {
+        position: absolute;
+        top: 60px;
+        right: 0;
+        background-color: #2F3131;
+        flex-direction: column;
+        width: 100%;
+        height: 0;
+        overflow: hidden;
+        transition: height 0.3s ease;
+    }
+
+    /* When the menu is open, display the links */
+    .nav-links.open {
+        height: 200px; /* Adjust height based on
