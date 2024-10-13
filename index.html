@@ -43,7 +43,7 @@
     <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
   </head>
 
-
+<!-- Sivuston symbolit/ikonit-->
   <body class="is-loading">
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -101,72 +101,18 @@
         />
       </symbol>
     </svg>
-    <!-- Taustalla liikkuvat partikkelit -->
+
+    <!-- Taustalla liikkuvat partikkelit ja konfiguraatio -->
     <div id="particles-js"></div>
-    <script>
-      // Particles.js-kirjaston asetukset
-      particlesJS("particles-js", {
-        particles: {
-          number: {
-            value: 80,
-            density: {
-              enable: true,
-              value_area: 800,
-            },
-          },
-          color: {
-            value: "#F9BA32",
-          },
-          line_linked: {
-            enable: true, // Ota käyttöön viivat partikkelien välillä
-            distance: 150, // Viivojen etäisyys
-            color: "#F9BA32", // Viivojen väri
-            opacity: 0.4, // Viivojen läpinäkyvyys
-            width: 1, // Viivojen leveys
-          },
-          opacity: {
-            value: 0.5,
-            anim: {
-              enable: true,
-              speed: 1,
-              opacity_min: 0.1,
-              sync: false,
-            },
-          },
-          size: {
-            value: 3,
-            random: true,
-          },
-          move: {
-            enable: true,
-            speed: 2,
-            direction: "none",
-            out_mode: "out",
-          },
-        },
-        interactivity: {
-          events: {
-            onhover: {
-              enable: true,
-              mode: "grab",
-            },
-          },
-          modes: {
-            grab: {
-              distance: 140,
-              line_linked: {
-                opacity: 1,
-              },
-            },
-          },
-        },
-        retina_detect: true,
-      });
-    </script>
+    <script src="js/particles-config.js"></script>
 
     <div id="wrapper">
       <div id="main">
         <div class="inner">
+
+          <!-- Avatar kuva-->
+          <img src="https://avatars.githubusercontent.com/u/7629042" alt="Avatar" class="avatar">
+
           <!-- Koti-osio -->
           <section id="home-section">
             <hr id="divider05" class="style2" />
@@ -175,6 +121,8 @@
               My name is Riki Länsilahti, welcome to my portfolio and profile
               page.
             </p>
+            <img src="https://avatars.githubusercontent.com/u/7629042" alt="Avatar" class="avatar">
+
             <hr id="divider02" class="style1 full" />
             <!-- Navigointipainikkeet -->
             <ul id="buttons01" class="style1 buttons">
@@ -259,6 +207,36 @@
               </li>
             </ul>
           </section>
+
+
+          <!-- About me osio-->
+          <section id="aboutme-section">
+            <ul id="buttons06" class="style2 buttons">
+              <li>
+                <a href="#home" class="button n01"
+                  ><svg aria-labelledby="icon-title">
+                    <title id="icon-title">Arrow Left</title>
+                    <use
+                      xlink:href="#icon-fe5d5fdb64e50b34c3e536f93a94c91e"
+                    ></use></svg
+                  ><span class="label">Back</span></a
+                >
+              </li>
+            </ul>
+            <h2 id="text07" class="style2">About me</h2>
+            <p id="text08" class="style3">
+              Hi, I’m Riki Länsilahti, a student at Haaga-Helia, an entrepreneur, and a proud father. I’m passionate about technology and innovation, with hobbies that include cars, 3D printing, hacking, drones, and disc golf. My diverse interests fuel my curiosity and drive to learn, both in my studies and in my business ventures. I’m always looking for new challenges and ways to combine my skills with creativity.
+            </p>
+            <hr id="divider06" class="style1 full" />
+            <ul id="buttons07" class="style1 buttons">
+
+
+            </ul>
+          </section>
+
+
+
+
           <!-- Projektit-osio -->
           <section id="projects-section">
             <ul id="buttons06" class="style2 buttons">
