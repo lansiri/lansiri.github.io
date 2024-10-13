@@ -979,7 +979,7 @@ p.style2 span.p:nth-child(n + 2) {
     gap: 0.9375rem;
   }
 }
-</style > <noscript > <style > body {
+body {
   overflow: auto !important;
 }
 body:after {
