@@ -102,9 +102,13 @@
       </symbol>
     </svg>
 
-    <!-- Taustalla liikkuvat partikkelit ja konfiguraatio -->
+    <!-- Taustalla liikkuvat partikkelit, konfiguraatio -->
     <div id="particles-js"></div>
     <script src="js/particles-config.js"></script>
+    <script>
+      // Initialize particles using the external config
+      particlesJS('particles-js', particlesConfig);
+  </script>
 
     <div id="wrapper">
       <div id="main">
@@ -121,7 +125,7 @@
               My name is Riki Länsilahti, welcome to my portfolio and profile
               page.
             </p>
-            <img src="https://avatars.githubusercontent.com/u/7629042" alt="Avatar" class="avatar">
+            
 
             <hr id="divider02" class="style1 full" />
             <!-- Navigointipainikkeet -->
