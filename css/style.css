@@ -437,7 +437,7 @@ hr.style1:not(:last-child) {
 }
 hr.style1:before {
   width: 100%;
-  background-color: #2f3131;
+  background-color: #555757;
   height: 2px;
 }
 h1,
