@@ -395,10 +395,21 @@
     try { navigator.clipboard.writeText($("proof").textContent); } catch (e) {}
   });
   $("btn-selftest").addEventListener("click", function () {
-    location.href = receivedPath + "#access_token=SELFTEST-eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9." +
-      "c2VsZnRlc3QtcGF5bG9hZC1ub3QtYS1yZWFsLXRva2Vu.c2lnbmF0dXJl" +
-      "&token_type=Bearer&expires_in=86400&scope=openid%20profile%20email%20offline_access" +
-      "&state=" + CANARY_PREFIX + "SELFTEST";
+    // Builds an obviously fake JWT at runtime. There is deliberately no long
+    // credential-shaped literal anywhere in this file.
+    function b64u(o) { return btoa(JSON.stringify(o)).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, ""); }
+    var now = Math.floor(Date.now() / 1000);
+    var fake = b64u({ alg: "RS256", kid: "SELFTEST", typ: "JWT" }) + "." +
+               b64u({ iss: "https://sso.id.elisa.fi", sub: "SELFTEST-NOT-A-REAL-SUBJECT",
+                      aud: "7057530b-f675-4e48-bcbf-cd2eb269293e", email: "selftest@example.invalid",
+                      email_verified: true, name: "Self Test", auth_time: now, iat: now, exp: now + 86400 }) +
+               "." + new Array(90).join("S");
+    var q = new URLSearchParams();
+    q.set("access_token", fake); q.set("id_token", fake);
+    q.set("token_type", "Bearer"); q.set("expires_in", "86400");
+    q.set("scope", "openid profile email offline_access");
+    q.set("state", CANARY_PREFIX + "SELFTEST");
+    location.href = receivedPath + "#" + q.toString();
   });
   $("btn-clear").addEventListener("click", function () { location.href = receivedPath; });
 
