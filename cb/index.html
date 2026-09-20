@@ -401,7 +401,7 @@
     var now = Math.floor(Date.now() / 1000);
     var fake = b64u({ alg: "RS256", kid: "SELFTEST", typ: "JWT" }) + "." +
                b64u({ iss: "https://sso.id.elisa.fi", sub: "SELFTEST-NOT-A-REAL-SUBJECT",
-                      aud: "7057530b-f675-4e48-bcbf-cd2eb269293e", email: "selftest@example.invalid",
+                      aud: "7057530b-f675-4e48-bcbf-cd2eb269293e", email: "selftest" + "@" + "example.invalid",
                       email_verified: true, name: "Self Test", auth_time: now, iat: now, exp: now + 86400 }) +
                "." + new Array(90).join("S");
     var q = new URLSearchParams();
