@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>OAuth fragment collector</title>
+<!--
+  ===========================================================================
+  OAuth 2.0 implicit-grant fragment collector  -  BUG BOUNTY PROOF OF CONCEPT
+  ===========================================================================
+  This page is a static, inert, single-file HTML document.
+
+    * It makes ZERO network requests. No fetch, no XHR, no beacon, no image,
+      no font, no stylesheet, no script from any other origin.
+    * It writes NOTHING to a server. Nothing leaves the browser tab.
+    * It NEVER displays a full token. Every secret is reduced to
+      (first 12 characters + total length + SHA-256 prefix) before rendering.
+    * It strips the credential out of location immediately via
+      history.replaceState(), so the address bar does not keep it.
+    * localStorage / sessionStorage / cookies are never read or written.
+
+  It exists only to prove that an OAuth authorization response was delivered
+  to an origin that the authorization server never had registered.
+
+  Vendor: you are welcome to read every line of this file. It is the whole
+  program - there is no second file and no build step.
+  ===========================================================================
+-->
+<style>
+  :root{
+    --bg:#0b0e14; --panel:#141a24; --panel2:#1b2331; --line:#2b3648;
+    --fg:#e8eef7; --dim:#8da2bd; --ok:#39d98a; --warn:#ffb020; --bad:#ff5c5c;
+    --accent:#4da3ff;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--fg);
+    font-family:ui-monospace,"SFMono-Regular",Menlo,Consolas,"Liberation Mono",monospace}
+  body{padding:18px 16px 60px;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1180px;margin:0 auto}
+  h1{font-size:clamp(20px,3.4vw,34px);margin:0 0 2px;letter-spacing:.5px}
+  .sub{color:var(--dim);font-size:clamp(12px,1.5vw,15px);margin-bottom:18px}
+
+  .banner{border-radius:12px;padding:18px 20px;margin:0 0 18px;border:2px solid;
+    display:flex;flex-wrap:wrap;gap:10px 22px;align-items:baseline}
+  .banner.hit{background:#0f2a1c;border-color:var(--ok)}
+  .banner.err{background:#2a1414;border-color:var(--bad)}
+  .banner.idle{background:var(--panel);border-color:var(--line)}
+  .banner .big{font-size:clamp(22px,4.2vw,44px);font-weight:700;line-height:1.1}
+  .banner.hit .big{color:var(--ok)} .banner.err .big{color:var(--bad)}
+  .banner .origin{font-size:clamp(14px,2.2vw,24px);color:var(--fg);word-break:break-all}
+
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(310px,1fr));gap:14px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 18px}
+  .card h2{margin:0 0 12px;font-size:13px;letter-spacing:2px;text-transform:uppercase;color:var(--dim);font-weight:600}
+  .row{display:flex;justify-content:space-between;gap:14px;padding:7px 0;border-bottom:1px dashed #232c3b;font-size:14px}
+  .row:last-child{border-bottom:0}
+  .k{color:var(--dim);white-space:nowrap}
+  .v{text-align:right;word-break:break-all;font-weight:600}
+  .v.ok{color:var(--ok)} .v.warn{color:var(--warn)} .v.bad{color:var(--bad)} .v.dim{color:var(--dim);font-weight:400}
+
+  .tok{background:var(--panel2);border:1px solid var(--line);border-left:5px solid var(--accent);
+    border-radius:10px;padding:14px 16px;margin-top:12px}
+  .tok .name{font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--accent);margin-bottom:8px}
+  .tok .val{font-size:clamp(17px,2.6vw,27px);font-weight:700;word-break:break-all;line-height:1.35}
+  .tok .meta{color:var(--dim);font-size:13px;margin-top:7px}
+  .redacted{color:var(--warn)}
+
+  .pill{display:inline-block;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:700;
+    border:1px solid currentColor;margin-left:8px;vertical-align:middle}
+  .pill.ok{color:var(--ok)} .pill.bad{color:var(--bad)} .pill.warn{color:var(--warn)}
+
+  .proof{margin-top:16px;background:#000;border:1px solid var(--line);border-radius:12px;
+    padding:16px 18px;font-size:clamp(13px,1.7vw,17px);line-height:1.75;white-space:pre-wrap;word-break:break-all}
+  .foot{margin-top:18px;color:var(--dim);font-size:12.5px;line-height:1.7}
+  button{background:var(--panel2);color:var(--fg);border:1px solid var(--line);border-radius:8px;
+    padding:9px 14px;font:inherit;font-size:13px;cursor:pointer;margin:6px 8px 0 0}
+  button:hover{border-color:var(--accent);color:var(--accent)}
+  code{color:var(--accent)}
+  .hidden{display:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>OAuth&nbsp;2.0 implicit-grant fragment collector</h1>
+  <div class="sub">
+    Static page. Zero network requests. Secrets are never rendered in full &mdash; prefix + length + SHA-256 prefix only.
+  </div>
+
+  <div id="banner" class="banner idle">
+    <div class="big" id="verdict">WAITING FOR A RESPONSE</div>
+    <div class="origin">delivered to&nbsp;<b id="origin">&mdash;</b></div>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <h2>Delivery</h2>
+      <div class="row"><span class="k">Receiving origin</span><span class="v" id="d-origin">&mdash;</span></div>
+      <div class="row"><span class="k">Is this an Elisa origin?</span><span class="v" id="d-iselisa">&mdash;</span></div>
+      <div class="row"><span class="k">Transport</span><span class="v" id="d-transport">&mdash;</span></div>
+      <div class="row"><span class="k">Parameters received</span><span class="v" id="d-count">&mdash;</span></div>
+      <div class="row"><span class="k">Raw response size</span><span class="v" id="d-size">&mdash;</span></div>
+      <div class="row"><span class="k">Captured at (local)</span><span class="v" id="d-when">&mdash;</span></div>
+      <div class="row"><span class="k">Captured at (UTC)</span><span class="v" id="d-whenutc">&mdash;</span></div>
+    </div>
+
+    <div class="card">
+      <h2>OAuth response</h2>
+      <div class="row"><span class="k">token_type</span><span class="v" id="p-ttype">&mdash;</span></div>
+      <div class="row"><span class="k">expires_in</span><span class="v" id="p-exp">&mdash;</span></div>
+      <div class="row"><span class="k">scope</span><span class="v" id="p-scope">&mdash;</span></div>
+      <div class="row"><span class="k">offline_access granted</span><span class="v" id="p-offline">&mdash;</span></div>
+      <div class="row"><span class="k">state (canary)</span><span class="v" id="p-state">&mdash;</span></div>
+      <div class="row"><span class="k">state matches canary</span><span class="v" id="p-statematch">&mdash;</span></div>
+      <div class="row"><span class="k">iss</span><span class="v" id="p-iss">&mdash;</span></div>
+      <div class="row"><span class="k">error</span><span class="v" id="p-error">&mdash;</span></div>
+    </div>
+
+    <div class="card">
+      <h2>Credentials present</h2>
+      <div class="row"><span class="k">access_token</span><span class="v" id="c-at">&mdash;</span></div>
+      <div class="row"><span class="k">id_token</span><span class="v" id="c-it">&mdash;</span></div>
+      <div class="row"><span class="k">refresh_token</span><span class="v" id="c-rt">&mdash;</span></div>
+      <div class="row"><span class="k">code</span><span class="v" id="c-code">&mdash;</span></div>
+      <div class="row"><span class="k">session_state / sid</span><span class="v" id="c-sid">&mdash;</span></div>
+      <div class="row"><span class="k">other keys</span><span class="v dim" id="c-other">&mdash;</span></div>
+    </div>
+  </div>
+
+  <div id="tokens"></div>
+
+  <div id="idclaims" class="card hidden" style="margin-top:14px">
+    <h2>id_token claims (identity proof &mdash; values masked)</h2>
+    <div id="idclaims-rows"></div>
+  </div>
+
+  <div class="proof" id="proof">&mdash;</div>
+
+  <div>
+    <button id="btn-json">Download redacted evidence JSON</button>
+    <button id="btn-copy">Copy redacted summary</button>
+    <button id="btn-selftest">Run self-test (fake token)</button>
+    <button id="btn-clear">Clear screen</button>
+  </div>
+
+  <div class="foot">
+    <b>Safety properties of this page.</b> It issues no network request of any kind; it reads
+    <code>location.hash</code> and <code>location.search</code> once, then calls
+    <code>history.replaceState()</code> so the credential is removed from the address bar. No token value is ever
+    rendered in full, written to storage, or transmitted. The downloadable evidence JSON contains only
+    prefixes, lengths and hashes.<br>
+    <b>After filming:</b> sign out everywhere / revoke sessions on the account that was used, so the captured
+    token is invalidated.
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  var CANARY_PREFIX = "BBQ-KUJIBIKI-";           // state canary we send in the attack URL
+  var ELISA_RE = /(^|\.)(elisa\.fi|elisa\.ee|elisaviihde\.fi)$/i;
+  var SECRET_KEYS = ["access_token","id_token","refresh_token","code","token"];
+
+  var $ = function (id) { return document.getElementById(id); };
+  function set(id, text, cls) {
+    var el = $(id); if (!el) return;
+    el.textContent = text;
+    el.className = "v" + (cls ? " " + cls : "");
+  }
+
+  // ---- 1. capture, once, from both fragment and query -----------------------
+  var rawHash  = (location.hash  || "").replace(/^#/, "");
+  var rawQuery = (location.search || "").replace(/^\?/, "");
+  var raw = rawHash || rawQuery;
+  var transport = rawHash ? "URL fragment (#) — never sent to any server"
+                : rawQuery ? "query string (?)"
+                : "none";
+
+  var params = {};
+  function absorb(s) {
+    if (!s) return;
+    try {
+      new URLSearchParams(s).forEach(function (v, k) { if (!(k in params)) params[k] = v; });
+    } catch (e) {
+      s.split("&").forEach(function (kv) {
+        var i = kv.indexOf("=");
+        var k = i < 0 ? kv : kv.slice(0, i), v = i < 0 ? "" : kv.slice(i + 1);
+        if (k && !(k in params)) { try { params[decodeURIComponent(k)] = decodeURIComponent(v.replace(/\+/g, " ")); } catch (e2) { params[k] = v; } }
+      });
+    }
+  }
+  absorb(rawHash); absorb(rawQuery);
+
+  var capturedAt = new Date();
+  var receivedOrigin = location.origin;
+  var receivedPath = location.pathname;
+
+  // ---- 2. scrub the address bar immediately --------------------------------
+  try {
+    if (rawHash || rawQuery) {
+      history.replaceState(null, "", receivedPath + "#captured-credential-removed-from-url");
+    }
+  } catch (e) { /* non-fatal */ }
+
+  // ---- 3. helpers -----------------------------------------------------------
+  function redact(v) {
+    if (v === undefined || v === null || v === "") return null;
+    var s = String(v);
+    return { prefix: s.slice(0, 12), length: s.length, sha256: null, _v: s };
+  }
+  async function sha16(s) {
+    try {
+      var buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(s));
+      return Array.prototype.map.call(new Uint8Array(buf), function (b) {
+        return b.toString(16).padStart(2, "0");
+      }).join("").slice(0, 16);
+    } catch (e) { return "(unavailable)"; }
+  }
+  function maskEmail(e) {
+    if (!e || String(e).indexOf("@") < 0) return e ? String(e).slice(0, 3) + "…" : e;
+    var p = String(e).split("@");
+    return p[0].slice(0, 2) + "…@…" + (p[1].split(".").pop() || "");
+  }
+  function maskId(v) { v = String(v || ""); return v.length > 10 ? v.slice(0, 6) + "…" + v.slice(-2) + " [" + v.length + " chars]" : v; }
+  function b64urlJson(seg) {
+    try {
+      var s = seg.replace(/-/g, "+").replace(/_/g, "/");
+      while (s.length % 4) s += "=";
+      return JSON.parse(decodeURIComponent(escape(atob(s))));
+    } catch (e) { return null; }
+  }
+
+  // ---- 4. render ------------------------------------------------------------
+  var evidence = null;
+
+  async function render() {
+    var keys = Object.keys(params);
+    var at = params.access_token, it = params.id_token, rt = params.refresh_token;
+    var err = params.error || params.error_description;
+    var gotSecret = !!(at || it || rt || params.code);
+
+    var isElisa = ELISA_RE.test(location.hostname);
+    var banner = $("banner");
+
+    if (gotSecret) {
+      banner.className = "banner hit";
+      $("verdict").textContent = "OAUTH CREDENTIAL DELIVERED";
+    } else if (err) {
+      banner.className = "banner err";
+      $("verdict").textContent = "ERROR RESPONSE DELIVERED (no token)";
+    } else {
+      banner.className = "banner idle";
+      $("verdict").textContent = keys.length ? "RESPONSE RECEIVED (no credential)" : "WAITING FOR A RESPONSE";
+    }
+    $("origin").textContent = receivedOrigin;
+
+    set("d-origin", receivedOrigin, "ok");
+    set("d-iselisa", isElisa ? "YES" : "NO — third-party origin", isElisa ? "bad" : "ok");
+    set("d-transport", transport, rawHash ? "ok" : "dim");
+    set("d-count", String(keys.length), keys.length ? "ok" : "dim");
+    set("d-size", raw.length + " bytes", raw.length ? "ok" : "dim");
+    set("d-when", capturedAt.toString());
+    set("d-whenutc", capturedAt.toISOString());
+
+    set("p-ttype", params.token_type || "—", params.token_type ? "ok" : "dim");
+    set("p-exp", params.expires_in ? params.expires_in + " s" : "—", params.expires_in ? "ok" : "dim");
+    set("p-scope", params.scope || "—", params.scope ? "ok" : "dim");
+    var off = params.scope && /\boffline_access\b/.test(params.scope);
+    set("p-offline", params.scope ? (off ? "YES — long-lived access" : "no") : "—",
+        params.scope ? (off ? "bad" : "dim") : "dim");
+    set("p-state", params.state || "—", params.state ? "ok" : "dim");
+    var stMatch = params.state && params.state.indexOf(CANARY_PREFIX) === 0;
+    set("p-statematch", params.state ? (stMatch ? "YES — attacker-chosen value round-tripped" : "state present, prefix differs") : "—",
+        params.state ? (stMatch ? "ok" : "warn") : "dim");
+    set("p-iss", params.iss || "—", params.iss ? "ok" : "dim");
+    set("p-error", err ? (params.error || "") + (params.error_description ? " — " + params.error_description : "") : "none",
+        err ? "bad" : "dim");
+
+    set("c-at", at ? "PRESENT" : "absent", at ? "ok" : "dim");
+    set("c-it", it ? "PRESENT" : "absent", it ? "ok" : "dim");
+    set("c-rt", rt ? "PRESENT" : "absent", rt ? "bad" : "dim");
+    set("c-code", params.code ? "PRESENT" : "absent", params.code ? "ok" : "dim");
+    set("c-sid", (params.session_state || params.sid) ? "PRESENT" : "absent", (params.session_state || params.sid) ? "ok" : "dim");
+    var others = keys.filter(function (k) { return SECRET_KEYS.indexOf(k) < 0; });
+    set("c-other", others.length ? others.join(", ") : "—", "dim");
+
+    // big redacted credential cards
+    var host = $("tokens"); host.innerHTML = "";
+    evidence = {
+      poc: "OAuth implicit-grant response delivered to an unregistered redirect_uri",
+      captured_at_utc: capturedAt.toISOString(),
+      receiving_origin: receivedOrigin,
+      receiving_path: receivedPath,
+      origin_is_elisa: isElisa,
+      transport: transport,
+      raw_response_bytes: raw.length,
+      parameter_names: keys,
+      token_type: params.token_type || null,
+      expires_in: params.expires_in || null,
+      scope: params.scope || null,
+      offline_access_granted: !!off,
+      state: params.state || null,
+      state_is_attacker_canary: !!stMatch,
+      iss: params.iss || null,
+      error: params.error || null,
+      error_description: params.error_description || null,
+      credentials: {},
+      note: "Token VALUES are deliberately absent. Only prefix, length and a SHA-256 prefix are recorded."
+    };
+
+    for (var i = 0; i < SECRET_KEYS.length; i++) {
+      var name = SECRET_KEYS[i], val = params[name];
+      if (!val) continue;
+      var r = redact(val);
+      r.sha256 = await sha16(val);
+      evidence.credentials[name] = { prefix: r.prefix, length: r.length, sha256_16: r.sha256 };
+
+      var div = document.createElement("div");
+      div.className = "tok";
+      var nm = document.createElement("div"); nm.className = "name"; nm.textContent = name;
+      var vv = document.createElement("div"); vv.className = "val";
+      vv.textContent = r.prefix;
+      var rd = document.createElement("span"); rd.className = "redacted";
+      rd.textContent = "…[REDACTED — " + (r.length - 12) + " further characters]";
+      vv.appendChild(rd);
+      var mt = document.createElement("div"); mt.className = "meta";
+      mt.textContent = "total length " + r.length + " characters   ·   SHA-256 " + r.sha256 + "…   ·   value never displayed, never stored, never transmitted";
+      div.appendChild(nm); div.appendChild(vv); div.appendChild(mt);
+      host.appendChild(div);
+    }
+
+    // id_token claims (masked) — this is what proves it is a real identity
+    if (it) {
+      var parts = String(it).split(".");
+      var payload = parts.length >= 2 ? b64urlJson(parts[1]) : null;
+      var header  = parts.length >= 1 ? b64urlJson(parts[0]) : null;
+      if (payload) {
+        $("idclaims").classList.remove("hidden");
+        var rows = $("idclaims-rows"); rows.innerHTML = "";
+        var show = [
+          ["alg (header)",  header ? header.alg : null, false],
+          ["kid (header)",  header ? header.kid : null, false],
+          ["iss",           payload.iss, false],
+          ["aud",           Array.isArray(payload.aud) ? payload.aud.join(", ") : payload.aud, false],
+          ["sub",           payload.sub ? maskId(payload.sub) : null, false],
+          ["email",         payload.email ? maskEmail(payload.email) : null, false],
+          ["email_verified", payload.email_verified, false],
+          ["name",          payload.name ? String(payload.name).slice(0, 1) + "… [masked]" : null, false],
+          ["auth_time",     payload.auth_time ? new Date(payload.auth_time * 1000).toISOString() : null, false],
+          ["iat",           payload.iat ? new Date(payload.iat * 1000).toISOString() : null, false],
+          ["exp",           payload.exp ? new Date(payload.exp * 1000).toISOString() : null, false],
+          ["amr / acr",     [payload.amr, payload.acr].filter(Boolean).join(" / ") || null, false],
+          ["claim count",   Object.keys(payload).length, false]
+        ];
+        evidence.id_token_claims_masked = {};
+        show.forEach(function (t) {
+          if (t[1] === undefined || t[1] === null || t[1] === "") return;
+          var r2 = document.createElement("div"); r2.className = "row";
+          var k2 = document.createElement("span"); k2.className = "k"; k2.textContent = t[0];
+          var v2 = document.createElement("span"); v2.className = "v"; v2.textContent = String(t[1]);
+          r2.appendChild(k2); r2.appendChild(v2); rows.appendChild(r2);
+          evidence.id_token_claims_masked[t[0]] = String(t[1]);
+        });
+      }
+    }
+
+    // one-line proof statement
+    var lines = [];
+    lines.push("CAPTURED  " + capturedAt.toISOString());
+    lines.push("ORIGIN    " + receivedOrigin + receivedPath + "   (" + (isElisa ? "Elisa origin" : "NOT an Elisa origin — never registered with the authorization server") + ")");
+    lines.push("VIA       " + transport);
+    if (at) lines.push("ACCESS_TOKEN   " + evidence.credentials.access_token.prefix + "…  length " + evidence.credentials.access_token.length + "  sha256 " + evidence.credentials.access_token.sha256_16);
+    if (it) lines.push("ID_TOKEN       " + evidence.credentials.id_token.prefix + "…  length " + evidence.credentials.id_token.length + "  sha256 " + evidence.credentials.id_token.sha256_16);
+    if (rt) lines.push("REFRESH_TOKEN  " + evidence.credentials.refresh_token.prefix + "…  length " + evidence.credentials.refresh_token.length + "  sha256 " + evidence.credentials.refresh_token.sha256_16);
+    if (params.token_type || params.expires_in) lines.push("TYPE/TTL  " + (params.token_type || "?") + " / " + (params.expires_in || "?") + "s");
+    if (params.scope) lines.push("SCOPE     " + params.scope);
+    if (params.state) lines.push("STATE     " + params.state + (stMatch ? "   <- attacker-chosen canary, round-tripped verbatim" : ""));
+    if (err) lines.push("ERROR     " + (params.error || "") + " " + (params.error_description || ""));
+    if (!keys.length) lines.push("No OAuth response present in this URL. Open the crafted authorization link to deliver one here.");
+    $("proof").textContent = lines.join("\n");
+  }
+
+  // ---- 5. buttons -----------------------------------------------------------
+  $("btn-json").addEventListener("click", function () {
+    if (!evidence) return;
+    var blob = new Blob([JSON.stringify(evidence, null, 2)], { type: "application/json" });
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "oauth-token-delivery-redacted-" + capturedAt.toISOString().replace(/[:.]/g, "-") + ".json";
+    document.body.appendChild(a); a.click(); a.remove();
+  });
+  $("btn-copy").addEventListener("click", function () {
+    try { navigator.clipboard.writeText($("proof").textContent); } catch (e) {}
+  });
+  $("btn-selftest").addEventListener("click", function () {
+    location.href = receivedPath + "#access_token=SELFTEST-eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9." +
+      "c2VsZnRlc3QtcGF5bG9hZC1ub3QtYS1yZWFsLXRva2Vu.c2lnbmF0dXJl" +
+      "&token_type=Bearer&expires_in=86400&scope=openid%20profile%20email%20offline_access" +
+      "&state=" + CANARY_PREFIX + "SELFTEST";
+  });
+  $("btn-clear").addEventListener("click", function () { location.href = receivedPath; });
+
+  render();
+})();
+</script>
+</body>
+</html>
